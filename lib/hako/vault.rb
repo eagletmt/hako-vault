@@ -1,4 +1,5 @@
-require "hako/vault/version"
+# frozen_string_literal: true
+require 'hako/vault/version'
 
 module Hako
   module Vault

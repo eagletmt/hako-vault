@@ -1,8 +1,6 @@
-# Hako::Vault
+# Hako::EnvProviders::Vault
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/hako/vault`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Provide variables from [Vault](https://www.vaultproject.io/) to [hako](https://github.com/eagletmt/hako)
 
 ## Installation
 
@@ -21,8 +19,26 @@ Or install it yourself as:
     $ gem install hako-vault
 
 ## Usage
+### Store secret values to Vault
 
-TODO: Write usage instructions here
+```
+% export VAULT_ADDR=https://vault.example.com:8200
+% echo -n '{"value": "Secret value from Vault"}' | vault write secret/hako/vault-sample/test_message -
+```
+
+### Configure hako application
+
+Set `VAULT_TOKEN` environment variable when running hako commands.
+
+```yaml
+env:
+  $providers:
+    - type: vault
+      addr: https://vault.example.com:8200
+      directory: hako/vault-sample
+  PORT: 3000
+  MESSAGE: '#{test_message}'    # "Secret value from Vault" will be injected
+```
 
 ## Development
 

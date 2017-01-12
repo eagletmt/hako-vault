@@ -8,5 +8,15 @@ Style/HashSyntax:
   Exclude:
     - 'Rakefile'
 
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/PercentLiteralDelimiters:
+  PreferredDelimiters:
+    '%w': '[]'
+
+Style/RaiseArgs:
+  EnforcedStyle: compact
+
 Metrics:
   Enabled: false

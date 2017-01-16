@@ -26,7 +26,6 @@ module Hako
           @http.use_ssl = true
         end
         @directory = options['directory']
-        @token = ENV['VAULT_TOKEN']
       end
 
       # @param [Array<String>] variables
@@ -36,7 +35,7 @@ module Hako
         @http.start do
           variables.each do |key|
             req = Net::HTTP::Get.new("/v1/secret/#{@directory}/#{key}")
-            req['X-Vault-Token'] = @token
+            req['X-Vault-Token'] = ENV['VAULT_TOKEN']
             res = @http.request(req)
             case res.code
             when '200'

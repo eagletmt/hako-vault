@@ -39,12 +39,12 @@ module Hako
         end
       end
 
-      def dry_run_available?
+      def validatable?
         true
       end
 
-      def dry_run!
-        @dry_run = true
+      def validate!
+        @validate = true
       end
 
       private

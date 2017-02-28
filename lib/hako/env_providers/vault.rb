@@ -49,6 +49,43 @@ module Hako
         end
         env
       end
+
+      # @return [Boolean]
+      def can_ask_keys?
+        true
+      end
+
+      # @param [Array<String>] variables
+      # @return [Array<String>]
+      def ask_keys(variables)
+        keys = []
+        @http.start do
+          parent_directories_for(variables).each do |parent_dir|
+            req = Net::HTTP::Get.new("/v1/secret/#{@directory}/#{parent_dir}?list=true")
+            req['X-Vault-Token'] = ENV['VAULT_TOKEN']
+            res = @http.request(req)
+            case res.code
+            when '200'
+              keys += JSON.parse(res.body)['data']['keys'].map { |key| "#{parent_dir}#{key}" }
+            when '404'
+              # Ignore
+            else
+              raise Error.new("Vault HTTP Error: #{res.code}: #{res.body}")
+            end
+          end
+        end
+        keys.select { |key| variables.include?(key) }
+      end
+
+      # @param [Array<String>] variables
+      # @return [Array<String>]
+      def parent_directories_for(variables)
+        # XXX: URI module cannot join relative URIs
+        base_uri = URI.parse("https://dummy/")
+        variables.map do |variable|
+          (base_uri + variable + '.').request_uri.sub(%r{\A/}, '')
+        end.uniq
+      end
     end
   end
 end

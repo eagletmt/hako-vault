@@ -1,3 +1,7 @@
+# 0.2.2 (2017-06-26)
+## Bug fixes
+- Retry when Vault returns 5xx
+
 # 0.2.1 (2017-03-02)
 ## Bug fixes
 - Add missing require

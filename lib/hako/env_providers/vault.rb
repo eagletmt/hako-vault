@@ -35,9 +35,7 @@ module Hako
         env = {}
         @http.start do
           variables.each do |key|
-            req = Net::HTTP::Get.new("/v1/secret/#{@directory}/#{key}")
-            req['X-Vault-Token'] = ENV['VAULT_TOKEN']
-            res = @http.request(req)
+            res = get_with_retry("/v1/secret/#{@directory}/#{key}")
             case res.code
             when '200'
               env[key] = JSON.parse(res.body)['data']['value']
@@ -62,9 +60,7 @@ module Hako
         keys = []
         @http.start do
           parent_directories_for(variables).each do |parent_dir|
-            req = Net::HTTP::Get.new("/v1/secret/#{@directory}/#{parent_dir}?list=true")
-            req['X-Vault-Token'] = ENV['VAULT_TOKEN']
-            res = @http.request(req)
+            res = get_with_retry("/v1/secret/#{@directory}/#{parent_dir}?list=true")
             case res.code
             when '200'
               keys += JSON.parse(res.body)['data']['keys'].map { |key| "#{parent_dir}#{key}" }
@@ -78,6 +74,8 @@ module Hako
         keys.select { |key| variables.include?(key) }
       end
 
+      private
+
       # @param [Array<String>] variables
       # @return [Array<String>]
       def parent_directories_for(variables)
@@ -86,6 +84,28 @@ module Hako
         variables.map do |variable|
           (base_uri + variable + '.').request_uri.sub(%r{\A/}, '')
         end.uniq
+      end
+
+      # @param [String] path
+      # @return [Net::HTTPResponse]
+      def get_with_retry(path)
+        last_error = nil
+        10.times do |i|
+          req = Net::HTTP::Get.new(path)
+          req['X-Vault-Token'] = ENV['VAULT_TOKEN']
+          res = @http.request(req)
+          code = res.code.to_i
+          if code >= 500 && code < 600
+            Hako.logger.warn("Vault HTTP Error: #{res.code}: #{res.body}")
+            last_error = res
+            interval = 1.5**i
+            Hako.logger.warn("Retrying after #{interval} seconds")
+            sleep(interval)
+          else
+            return res
+          end
+        end
+        raise Error.new("Vault HTTP Error: #{last_error.code}: #{last_error.body}")
       end
     end
   end

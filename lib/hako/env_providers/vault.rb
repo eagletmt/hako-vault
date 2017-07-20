@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'hako/env_provider'
 require 'json'
 require 'net/http'
@@ -80,7 +81,7 @@ module Hako
       # @return [Array<String>]
       def parent_directories_for(variables)
         # XXX: URI module cannot join relative URIs
-        base_uri = URI.parse("https://dummy/")
+        base_uri = URI.parse('https://dummy/')
         variables.map do |variable|
           (base_uri + variable + '.').request_uri.sub(%r{\A/}, '')
         end.uniq

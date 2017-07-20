@@ -1,3 +1,7 @@
+# 0.2.3 (2017-07-20)
+## Bug fixes
+- Retry when Vault returns 307
+
 # 0.2.2 (2017-06-26)
 ## Bug fixes
 - Retry when Vault returns 5xx

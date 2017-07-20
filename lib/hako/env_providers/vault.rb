@@ -95,7 +95,7 @@ module Hako
           req['X-Vault-Token'] = ENV['VAULT_TOKEN']
           res = @http.request(req)
           code = res.code.to_i
-          if code >= 500 && code < 600
+          if retryable_http_code?(code)
             Hako.logger.warn("Vault HTTP Error: #{res.code}: #{res.body}")
             last_error = res
             interval = 1.5**i
@@ -106,6 +106,10 @@ module Hako
           end
         end
         raise Error.new("Vault HTTP Error: #{last_error.code}: #{last_error.body}")
+      end
+
+      def retryable_http_code?(code)
+        code == 307 || (code >= 500 && code < 600)
       end
     end
   end
